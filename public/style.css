@@ -1,52 +1,37 @@
-/* --- 1. Import the Font (Put this at the VERY TOP of style.css) --- */
+/* --- 1. Import Font --- */
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
-/* --- Global Variables (Modern Violet Theme) --- */
+
+/* --- 2. Global Variables --- */
 :root {
-    /* Light Mode Palette */
-    --bg-color: #f3f4f6;            /* Softer Light Gray */
+    --bg-color: #f3f4f6;
     --card-bg: #ffffff;
-    --text-main: #1f2937;           /* Dark Slate */
-    --text-sub: #6b7280;            /* Cool Gray */
-    
-    /* Branding */
-    --header-bg: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); /* Indigo to Violet Gradient */
-    --accent-color: #6366f1;        /* Indigo */
-    
-    /* Chat Colors */
-    --msg-sent: #6366f1;            /* Indigo */
+    --text-main: #1f2937;
+    --text-sub: #6b7280;
+    --header-bg: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    --accent-color: #6366f1;
+    --msg-sent: #6366f1;
     --msg-sent-text: #ffffff;
     --msg-rcvd: #f3f4f6;
     --msg-rcvd-text: #1f2937;
-    
-    /* UI Elements */
     --border-color: #e5e7eb;
     --input-bg: #f9fafb;
-    --chat-area-bg: #f8fafc;        /* Very light slate */
-    
-    /* Toasts */
-    --toast-error: #ef4444;         /* Soft Red */
-    --toast-success: #10b981;       /* Soft Emerald */
-    --toast-info: #3b82f6;          /* Soft Blue */
+    --chat-area-bg: #f8fafc;
+    --toast-error: #ef4444;
+    --toast-success: #10b981;
+    --toast-info: #3b82f6;
 }
 
 [data-theme="dark"] {
-    /* Dark Mode Palette (Slate) */
-    --bg-color: #0f172a;            /* Deep Slate */
-    --card-bg: #1e293b;             /* Lighter Slate */
+    --bg-color: #0f172a;
+    --card-bg: #1e293b;
     --text-main: #f8fafc;
     --text-sub: #94a3b8;
-    
-    /* Branding (Darker Gradient) */
     --header-bg: linear-gradient(135deg, #4338ca 0%, #6d28d9 100%);
     --accent-color: #818cf8;
-    
-    /* Chat Colors */
     --msg-sent: #6366f1;
     --msg-sent-text: #ffffff;
-    --msg-rcvd: #334155;            /* Slate Gray */
+    --msg-rcvd: #334155;
     --msg-rcvd-text: #f1f5f9;
-    
-    /* UI Elements */
     --border-color: #334155;
     --input-bg: #0f172a;
     --chat-area-bg: #0f172a;
@@ -55,8 +40,7 @@
 * { box-sizing: border-box; }
 
 body {
-/* APPLY THE NEW FONT HERE */
-    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-family: 'Plus Jakarta Sans', sans-serif;
     background-color: var(--bg-color);
     color: var(--text-main);
     margin: 0;
@@ -66,6 +50,7 @@ body {
     justify-content: center;
     align-items: center;
     transition: background 0.3s, color 0.3s;
+    -webkit-font-smoothing: antialiased;
 }
 
 .app-container {
@@ -137,12 +122,6 @@ header p { margin: 2px 0 0; font-size: 0.85rem; opacity: 0.9; font-weight: 500; 
     display: flex; flex-direction: column; gap: 15px; position: relative;
 }
 
-/* Scrollbar Styling */
-.chat-box::-webkit-scrollbar { width: 8px; }
-.chat-box::-webkit-scrollbar-thumb { background-color: var(--border-color); border-radius: 4px; }
-.chat-box::-webkit-scrollbar-track { background: transparent; }
-
-/* Emoji Popover */
 .emoji-popover {
     position: absolute; bottom: 20px; left: 20px; z-index: 100;
     box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
@@ -151,7 +130,6 @@ header p { margin: 2px 0 0; font-size: 0.85rem; opacity: 0.9; font-weight: 500; 
 }
 emoji-picker { width: 100%; height: 350px; --background: var(--card-bg); --border-color: var(--border-color); }
 
-/* Overlay */
 .status-overlay {
     position: absolute; top: 0; left: 0; right: 0; bottom: 0;
     display: flex; flex-direction: column; justify-content: center; align-items: center;
@@ -295,3 +273,38 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
 @keyframes popIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 .modal-box h3 { margin: 0 0 15px 0; color: var(--text-main); font-size: 1.5rem; }
 .modal-box p { margin: 0 0 25px 0; color: var(--text-sub); line-height: 1.6; }
+
+/* --- Terms of Service Modal Styles --- */
+.tos-box { max-width: 500px; text-align: left; }
+.tos-box h3 { text-align: center; color: var(--accent-color); margin-bottom: 20px; font-size: 1.8rem; }
+.tos-content ul { list-style-type: none; padding: 0; margin: 20px 0; }
+.tos-content li { background: rgba(0,0,0,0.03); padding: 12px; border-radius: 8px; margin-bottom: 10px; font-size: 0.95rem; display: flex; align-items: center; }
+.tos-content li::before { content: "✅"; margin-right: 10px; }
+.tos-fineprint { font-size: 0.8rem; color: var(--text-sub); text-align: center; margin-top: 20px; }
+[data-theme="dark"] .tos-content li { background: rgba(255,255,255,0.05); }
+
+/* --- MOBILE OPTIMIZATIONS (The Fix) --- */
+.icon-btn.danger-icon { background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); margin-right: 5px; }
+.icon-btn.danger-icon:hover { background: #ef4444; color: white; }
+
+@media (max-width: 768px) {
+    header { padding: 10px 15px; }
+    header h1 { font-size: 1.2rem; }
+    header p { display: none; }
+    
+    /* Hide Big Bottom Button when Connected (Start btn is hidden) */
+    #start-btn[style*="none"] ~ #stop-btn { display: none !important; }
+    
+    /* Remove padding from controls when chatting */
+    .controls-area:has(#stop-btn:not([style*="none"])) .action-buttons { display: none; }
+    
+    .message-controls { padding: 10px 15px 15px 15px; gap: 8px; }
+    #icebreaker-btn, #emoji-btn, #camera-btn { font-size: 1.2rem; padding: 5px; }
+    #message-input { padding: 10px 15px; font-size: 0.95rem; }
+    .match-info { padding: 5px; font-size: 0.8rem; }
+}
+
+@media (min-width: 769px) {
+    /* Always hide header stop button on desktop */
+    #header-stop-btn { display: none !important; }
+}
