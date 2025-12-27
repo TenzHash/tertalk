@@ -3,35 +3,31 @@ const http = require('http');
 const { Server } = require('socket.io');
 const path = require('path');
 const Filter = require('bad-words'); 
-const helmet = require('helmet'); // NEW: Security Headers
-const rateLimit = require('express-rate-limit'); // NEW: Anti-Spam
-const xss = require('xss'); // NEW: Anti-Hacking
+const helmet = require('helmet'); 
+const rateLimit = require('express-rate-limit'); 
+const xss = require('xss'); 
 
 const filter = new Filter(); 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
-        origin: "*", // In production, replace "*" with your actual domain
+        origin: "*", 
         methods: ["GET", "POST"]
     }
 });
 
 // --- SECURITY MIDDLEWARE ---
-
-// 1. Helmet: Hides "X-Powered-By: Express" and sets security headers
 app.use(helmet({
-    contentSecurityPolicy: false, // Allow inline scripts/styles for this simple app
+    contentSecurityPolicy: false, 
 }));
 
-// 2. Rate Limiter: Relaxed for development
 const limiter = rateLimit({
-    windowMs: 1 * 60 * 1000, // Reset count every 1 minute (instead of 15)
-    max: 5000, // Allow 5000 requests per minute (instead of 100)
+    windowMs: 1 * 60 * 1000, 
+    max: 5000, 
     message: "Too many requests from this IP, please try again later."
 });
 app.use(limiter);
-
 // ---------------------------
 
 app.use(express.static(path.join(__dirname, 'public')));
@@ -39,7 +35,6 @@ app.use(express.static(path.join(__dirname, 'public')));
 let waitingQueue = [];
 
 io.on('connection', (socket) => {
-    // Limit sockets: If server is full, disconnect (Optional protection)
     if (io.sockets.sockets.size > 5000) {
         socket.disconnect();
         return;
@@ -48,7 +43,11 @@ io.on('connection', (socket) => {
     io.emit('user_count', io.sockets.sockets.size);
 
     socket.on('find_partner', (userData) => {
-        // Sanitize Inputs immediately
+        // --- BUG FIX START ---
+        // If userData is null/undefined, stop immediately to prevent crash
+        if (!userData) return; 
+        // --- BUG FIX END ---
+
         const safeTags = Array.isArray(userData.tags) ? userData.tags.map(t => xss(t)) : [];
         let safeNickname = xss(userData.profile?.nickname || 'Stranger').substring(0, 15);
         
@@ -90,10 +89,11 @@ io.on('connection', (socket) => {
 
     socket.on('send_message', (msg) => {
         if (socket.partnerId) {
-            // 1. Sanitize HTML/Script tags
+            // Safety: Ensure msg is a string before processing
+            if (typeof msg !== 'string') return;
+
             let cleanMsg = xss(msg);
             
-            // 2. Filter Bad Words
             try {
                 cleanMsg = filter.clean(cleanMsg); 
             } catch (e) {}
@@ -104,7 +104,6 @@ io.on('connection', (socket) => {
 
     socket.on('send_image', (imgData) => {
         if (socket.partnerId) {
-            // Basic check to ensure it's actually an image data string
             if (typeof imgData === 'string' && imgData.startsWith('data:image')) {
                 io.to(socket.partnerId).emit('receive_image', imgData);
             }

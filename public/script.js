@@ -179,6 +179,10 @@ stopBtn.addEventListener('click', () => {
     if (isConnected) {
         // SKIP LOGIC (Disconnect -> Find New)
         socket.emit('disconnect_partner');
+        
+        // FIX: Tell the app we are no longer connected!
+        isConnected = false; 
+        
         startFindingPartner();
     } else {
         // STOP LOGIC (Cancel Search)
