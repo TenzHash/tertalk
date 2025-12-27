@@ -18,13 +18,12 @@
 
     <div class="app-container">
         <header>
+            <button id="stop-btn" class="btn danger" style="display: none;">Skip ⏭️</button>
             <h1>TerTalk</h1>
             <p>Connect with Earth</p>
             <div class="online-count">🟢 <span id="user-count">0</span> Online</div>
             
             <div class="header-controls">
-                <button id="header-stop-btn" class="icon-btn danger-icon" title="End Chat" style="display: none;">✖️</button>
-                
                 <button id="mute-btn" class="icon-btn" title="Toggle Sound">🔊</button>
                 <button id="theme-toggle" class="icon-btn" title="Toggle Dark Mode">🌙</button>
             </div>
@@ -79,10 +78,12 @@
             </div>
 
             <div class="message-controls">
-                <input type="file" id="image-input" accept="image/*" style="display: none;">
-                <button id="camera-btn" title="Send Image" disabled>📷</button>
-                <button id="icebreaker-btn" title="Get a conversation topic" disabled>🎲</button>
-                <button id="emoji-btn" title="Add Emoji" disabled>😊</button>
+                <div class="tools-wrapper">
+                    <input type="file" id="image-input" accept="image/*" style="display: none;">
+                    <button id="camera-btn" title="Send Image" disabled>📷</button>
+                    <button id="icebreaker-btn" title="Get a conversation topic" disabled>🎲</button>
+                    <button id="emoji-btn" title="Add Emoji" disabled>😊</button>
+                </div>
 
                 <input type="text" id="message-input" placeholder="Type a message..." disabled>
                 <button id="send-btn" disabled>Send</button>
@@ -90,7 +91,7 @@
 
             <div class="action-buttons">
                 <button id="start-btn" class="btn primary">Find Partner</button>
-                <button id="stop-btn" class="btn danger" style="display: none;">Stop Chat</button>
+                <button id="stop-btn" class="btn danger" style="display: none;">Skip ⏭️</button>
             </div>
         </div>
     </div>

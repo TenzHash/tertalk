@@ -14,7 +14,7 @@ const messageInput = document.getElementById('message-input');
 const sendBtn = document.getElementById('send-btn');
 const startBtn = document.getElementById('start-btn');
 const stopBtn = document.getElementById('stop-btn');
-const headerStopBtn = document.getElementById('header-stop-btn'); // NEW
+const headerStopBtn = document.getElementById('header-stop-btn');
 const userCountSpan = document.getElementById('user-count');
 const typingIndicator = document.getElementById('typing-indicator');
 const interestsInput = document.getElementById('interests-input');
@@ -80,13 +80,13 @@ tabChannel.onmessage = (event) => {
 };
 
 window.addEventListener('load', () => {
-    // ToS Logic
     if (!localStorage.getItem('tertalk_tos_accepted')) {
         tosModal.style.display = 'flex';
         document.body.style.overflow = 'hidden';
     }
-    // PWA Logic
-    if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js').catch(console.error);
+    }
 
     if(localStorage.getItem('chat_nickname')) nicknameInput.value = localStorage.getItem('chat_nickname');
     if(localStorage.getItem('chat_age')) ageInput.value = localStorage.getItem('chat_age');
@@ -101,7 +101,7 @@ tosAgreeBtn.addEventListener('click', () => {
     localStorage.setItem('tertalk_tos_accepted', 'true'); tosModal.style.display = 'none'; document.body.style.overflow = 'auto'; matchSound.play().catch(e => {});
 });
 
-// Mobile Header Stop Button
+// Mobile Header Button (Mirrors the main button)
 headerStopBtn.addEventListener('click', () => stopBtn.click());
 
 themeToggle.addEventListener('click', () => {
@@ -128,6 +128,17 @@ imageInput.addEventListener('change', () => {
     reader.readAsDataURL(file); imageInput.value = ''; 
 });
 
+function appendImageRequest(src) {
+    const div = document.createElement('div');
+    div.className = 'message stranger consent-msg';
+    div.innerHTML = `<span>Partner sent an image.</span><div class="consent-buttons"><button class="btn-accept">View</button><button class="btn-deny">Deny</button></div>`;
+    
+    div.querySelector('.btn-accept').onclick = () => { div.remove(); appendImage(src, 'stranger', true); };
+    div.querySelector('.btn-deny').onclick = () => { div.innerHTML = `<span style="opacity:0.6; font-style:italic;">Image declined.</span>`; };
+
+    chatBox.insertBefore(div, typingIndicator); chatBox.scrollTop = chatBox.scrollHeight;
+}
+
 function appendImage(src, sender, isBlurred) {
     const div = document.createElement('div'); div.classList.add('message', sender);
     div.style.background = 'transparent'; div.style.padding = '0'; div.style.boxShadow = 'none';
@@ -146,47 +157,81 @@ function toggleInputs(disabled) {
     profileSection.style.opacity = disabled ? '0.5' : '1'; profileSection.style.pointerEvents = disabled ? 'none' : 'auto';
     if (!disabled) matchInfo.style.display = 'none';
 }
+
+// --- NEW SKIP LOGIC ---
+function startFindingPartner() {
+    let nickname = nicknameInput.value.trim();
+    if (!nickname) { showToast("Nickname is required!", "error"); nicknameInput.focus(); return; }
+    if (/\s/.test(nickname)) { showToast("Nickname must be one word!", "error"); nicknameInput.focus(); return; }
+    
+    localStorage.setItem('chat_nickname', nickname); localStorage.setItem('chat_age', ageInput.value); localStorage.setItem('chat_gender', genderInput.value); localStorage.setItem('chat_interests', interestsInput.value);
+    
+    const tags = interestsInput.value.split(',').map(tag => tag.trim()).filter(t => t.length > 0);
+    const profile = { nickname: nickname, age: ageInput.value, gender: genderInput.value };
+    
+    socket.emit('find_partner', { tags: tags, profile: profile });
+    setSearchingState(tags);
+}
+
+startBtn.addEventListener('click', startFindingPartner);
+
+stopBtn.addEventListener('click', () => {
+    if (isConnected) {
+        // SKIP LOGIC (Disconnect -> Find New)
+        socket.emit('disconnect_partner');
+        startFindingPartner();
+    } else {
+        // STOP LOGIC (Cancel Search)
+        socket.emit('disconnect_partner');
+        startBtn.style.display = 'block'; 
+        stopBtn.style.display = 'none'; 
+        headerStopBtn.style.display = 'none'; 
+        toggleInputs(false);
+        profileSection.style.display = 'flex'; 
+        interestsSection.style.display = 'block'; 
+        updateOverlay("Ready to Connect?", "Set your profile and start exploring.", false);
+    }
+});
+// ----------------------
+
 function setSearchingState(tags) {
-    startBtn.style.display = 'none'; stopBtn.style.display = 'block'; headerStopBtn.style.display = 'flex'; // Show header btn
-    stopBtn.textContent = 'Stop Searching'; stopBtn.classList.remove('primary'); toggleInputs(true);
+    startBtn.style.display = 'none'; 
+    stopBtn.style.display = 'block'; 
+    headerStopBtn.style.display = 'flex';
+    
+    // UI for Searching (Shows "Stop" option)
+    stopBtn.textContent = 'Stop Searching'; 
+    headerStopBtn.textContent = '✖️'; // Cross icon for cancel
+    
+    toggleInputs(true);
     profileSection.style.display = 'flex'; interestsSection.style.display = 'block';
     chatBox.querySelectorAll('.message, .system-message').forEach(msg => msg.remove());
     updateOverlay("Searching...", tags.length > 0 ? `Looking for: ${tags.join(', ')}` : "Looking for a random partner...", true);
 }
+
 function setConnectedState(partnerProfile) {
-    isConnected = true; hideOverlay(); messageInput.disabled = false; sendBtn.disabled = false; icebreakerBtn.disabled = false; emojiBtn.disabled = false; cameraBtn.disabled = false; 
-    stopBtn.textContent = 'Stop Chat'; headerStopBtn.style.display = 'flex'; // Show header btn
+    isConnected = true; hideOverlay(); 
+    messageInput.disabled = false; sendBtn.disabled = false; icebreakerBtn.disabled = false; emojiBtn.disabled = false; cameraBtn.disabled = false; 
+    
+    // UI for Chatting (Shows "Skip" option)
+    stopBtn.textContent = 'Skip ⏭️'; 
+    headerStopBtn.textContent = '⏭️'; // Skip icon for next
+
     profileSection.style.display = 'none'; interestsSection.style.display = 'none';
     let infoText = `Connected with: ${partnerProfile.nickname}`; if (partnerProfile.age || partnerProfile.gender) infoText += ` (${partnerProfile.gender || '?'} / ${partnerProfile.age || '?'})`;
     matchDetails.textContent = infoText; matchInfo.style.display = 'block';
 }
+
 function handleDisconnectState(reason) {
     isConnected = false; messageInput.disabled = true; sendBtn.disabled = true; icebreakerBtn.disabled = true; emojiBtn.disabled = true; cameraBtn.disabled = true; emojiPopover.style.display = 'none';
+    
+    // Reset buttons
     startBtn.style.display = 'block'; startBtn.textContent = 'Find New Partner'; startBtn.disabled = false; 
-    stopBtn.style.display = 'none'; headerStopBtn.style.display = 'none'; // Hide header btn
+    stopBtn.style.display = 'none'; headerStopBtn.style.display = 'none';
+    
     toggleInputs(false); 
     profileSection.style.display = 'flex'; interestsSection.style.display = 'block'; typingIndicator.style.display = 'none'; appendSystemMessage(reason);
 }
-
-startBtn.addEventListener('click', () => {
-    let nickname = nicknameInput.value.trim();
-    if (!nickname) { showToast("Nickname is required!", "error"); nicknameInput.focus(); return; }
-    if (/\s/.test(nickname)) { showToast("Nickname must be one word!", "error"); nicknameInput.focus(); return; }
-    localStorage.setItem('chat_nickname', nickname); localStorage.setItem('chat_age', ageInput.value); localStorage.setItem('chat_gender', genderInput.value); localStorage.setItem('chat_interests', interestsInput.value);
-    const tags = interestsInput.value.split(',').map(tag => tag.trim()).filter(t => t.length > 0);
-    const profile = { nickname: nickname, age: ageInput.value, gender: genderInput.value };
-    socket.emit('find_partner', { tags: tags, profile: profile }); setSearchingState(tags);
-});
-
-stopBtn.addEventListener('click', () => {
-    socket.emit('disconnect_partner');
-    if (!isConnected) {
-        startBtn.style.display = 'block'; startBtn.disabled = false; startBtn.textContent = 'Find Partner'; 
-        stopBtn.style.display = 'none'; headerStopBtn.style.display = 'none'; 
-        toggleInputs(false);
-        profileSection.style.display = 'flex'; interestsSection.style.display = 'block'; updateOverlay("Ready to Connect?", "Set your profile and start exploring.", false);
-    } else { handleDisconnectState('You disconnected.'); }
-});
 
 sendBtn.addEventListener('click', sendMessage);
 messageInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
@@ -203,7 +248,7 @@ socket.on('match_found', (data) => {
     if (data.tags && data.tags.length > 0) appendSystemMessage(`Common interests: ${data.tags.join(', ')}`);
 });
 socket.on('receive_message', (msg) => { typingIndicator.style.display = 'none'; appendMessage(msg, 'stranger'); if (!isMuted) msgSound.play().catch(e => {}); });
-socket.on('receive_image', (base64) => { typingIndicator.style.display = 'none'; appendImage(base64, 'stranger', true); if (!isMuted) msgSound.play().catch(e => {}); });
+socket.on('receive_image', (base64) => { typingIndicator.style.display = 'none'; appendImageRequest(base64); if (!isMuted) msgSound.play().catch(e => {}); });
 socket.on('partner_disconnected', () => { handleDisconnectState('Partner has disconnected.'); showToast("Partner left.", "info"); });
 socket.on('partner_typing', () => { typingIndicator.style.display = 'flex'; chatBox.scrollTop = chatBox.scrollHeight; });
 socket.on('partner_stop_typing', () => { typingIndicator.style.display = 'none'; });

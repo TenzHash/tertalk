@@ -87,6 +87,15 @@ header {
     position: relative;
 }
 
+/* NEW: Top Left Stop Button */
+#header-stop-btn {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: none; /* Controlled by JS */
+}
+
 .header-controls {
     position: absolute; right: 20px; top: 50%; transform: translateY(-50%);
     display: flex; gap: 10px;
@@ -94,7 +103,7 @@ header {
 
 .icon-btn {
     background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.2);
-    color: white; border-radius: 50%; width: 36px; height: 36px;
+    color: white; border-radius: 10%; width: 55px; height: 36px;
     cursor: pointer; font-size: 1.1rem; display: flex; align-items: center; justify-content: center;
     transition: all 0.2s;
     backdrop-filter: blur(4px);
@@ -123,12 +132,12 @@ header p { margin: 2px 0 0; font-size: 0.85rem; opacity: 0.9; font-weight: 500; 
 }
 
 .emoji-popover {
-    position: absolute; bottom: 20px; left: 20px; z-index: 100;
+    position: absolute; bottom: 60px; left: 10px; z-index: 100;
     box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
-    border-radius: 12px; overflow: hidden; max-width: 320px;
+    border-radius: 12px; overflow: hidden; max-width: 300px;
     border: 1px solid var(--border-color);
 }
-emoji-picker { width: 100%; height: 350px; --background: var(--card-bg); --border-color: var(--border-color); }
+emoji-picker { width: 100%; height: 300px; --background: var(--card-bg); --border-color: var(--border-color); }
 
 .status-overlay {
     position: absolute; top: 0; left: 0; right: 0; bottom: 0;
@@ -161,6 +170,18 @@ emoji-picker { width: 100%; height: 350px; --background: var(--card-bg); --borde
     align-self: flex-start; background-color: var(--msg-rcvd); color: var(--msg-rcvd-text);
     border-bottom-left-radius: 4px; border: 1px solid var(--border-color);
 }
+
+/* NEW: Image Consent Request Styles */
+.consent-msg {
+    display: flex; flex-direction: column; gap: 8px; align-items: flex-start;
+}
+.consent-buttons { display: flex; gap: 10px; width: 100%; margin-top: 5px; }
+.btn-accept, .btn-deny {
+    flex: 1; padding: 8px; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 0.85rem;
+}
+.btn-accept { background: var(--toast-success); color: white; }
+.btn-deny { background: rgba(0,0,0,0.1); color: var(--text-main); }
+[data-theme="dark"] .btn-deny { background: rgba(255,255,255,0.1); color: white; }
 
 /* Image Styles */
 .image-wrapper {
@@ -213,7 +234,8 @@ emoji-picker { width: 100%; height: 350px; --background: var(--card-bg); --borde
 }
 #interests-input:focus { border-color: var(--accent-color); }
 
-.message-controls { padding: 10px 20px 20px 20px; display: flex; gap: 12px; align-items: center; position: relative; }
+.message-controls { padding: 10px 20px 20px 20px; display: flex; gap: 10px; align-items: center; position: relative; }
+.tools-wrapper { display: flex; gap: 5px; }
 
 /* Action Buttons (Icons) */
 #icebreaker-btn, #emoji-btn, #camera-btn {
@@ -228,6 +250,7 @@ emoji-picker { width: 100%; height: 350px; --background: var(--card-bg); --borde
 #message-input {
     flex: 1; padding: 14px 18px; border: 1px solid var(--border-color); border-radius: 24px;
     outline: none; font-size: 1rem; background: var(--input-bg); color: var(--text-main); transition: all 0.2s;
+    min-width: 0; /* Important for flex shrinking */
 }
 #message-input:focus { background: var(--card-bg); border-color: var(--accent-color); box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1); }
 
@@ -284,7 +307,7 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
 [data-theme="dark"] .tos-content li { background: rgba(255,255,255,0.05); }
 
 /* --- MOBILE OPTIMIZATIONS (The Fix) --- */
-.icon-btn.danger-icon { background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); margin-right: 5px; }
+.icon-btn.danger-icon { background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); }
 .icon-btn.danger-icon:hover { background: #ef4444; color: white; }
 
 @media (max-width: 768px) {
@@ -299,9 +322,24 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
     .controls-area:has(#stop-btn:not([style*="none"])) .action-buttons { display: none; }
     
     .message-controls { padding: 10px 15px 15px 15px; gap: 8px; }
-    #icebreaker-btn, #emoji-btn, #camera-btn { font-size: 1.2rem; padding: 5px; }
+    .tools-wrapper { gap: 0; }
+    #icebreaker-btn, #emoji-btn, #camera-btn { font-size: 1.3rem; padding: 5px 8px; }
     #message-input { padding: 10px 15px; font-size: 0.95rem; }
     .match-info { padding: 5px; font-size: 0.8rem; }
+
+    /* Compact Send Button (Icon Only) */
+    #send-btn {
+        font-size: 0; /* Hide text */
+        width: 44px; height: 44px;
+        padding: 0;
+        display: flex; align-items: center; justify-content: center;
+        border-radius: 50%;
+    }
+    #send-btn::after {
+        content: "➤"; /* Arrow Icon */
+        font-size: 1.2rem;
+        color: white;
+    }
 }
 
 @media (min-width: 769px) {
