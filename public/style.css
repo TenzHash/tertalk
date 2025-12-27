@@ -96,10 +96,15 @@ header {
   position: absolute;
   left: 15px;
   top: 50%;
-  width: 55px;
-  height: 36px;
-  transform: translateY(-50%);
+  transform: translateY(-50%); /* Centers vertically */
+  width: 55px; /* Matches icon-btn width */
+  height: 36px; /* Matches icon-btn height */
   display: none; /* Controlled by JS */
+
+  /* Ensure content is centered */
+  align-items: center;
+  justify-content: center;
+  padding: 0;
 }
 
 .header-controls {

@@ -358,7 +358,6 @@ function setSearchingState(tags) {
 
   // UI for Searching (Should say STOP, not SKIP)
   stopBtn.textContent = "Stop Searching";
-  headerStopBtn.textContent = "✖️"; // Use 'X' for stop searching
 
   toggleInputs(true);
   profileSection.style.display = "flex";
