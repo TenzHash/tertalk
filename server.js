@@ -24,10 +24,10 @@ app.use(helmet({
     contentSecurityPolicy: false, // Allow inline scripts/styles for this simple app
 }));
 
-// 2. Rate Limiter: Limits IP to 100 requests per 15 minutes (Stops DDoS)
+// 2. Rate Limiter: Relaxed for development
 const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000, 
-    max: 100,
+    windowMs: 1 * 60 * 1000, // Reset count every 1 minute (instead of 15)
+    max: 5000, // Allow 5000 requests per minute (instead of 100)
     message: "Too many requests from this IP, please try again later."
 });
 app.use(limiter);
