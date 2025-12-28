@@ -1,7 +1,7 @@
 // --- SECURITY ---
-console.log = function () {};
-console.warn = function () {};
-console.error = function () {};
+//console.log = function () {};
+//console.warn = function () {};
+//console.error = function () {};
 document.addEventListener("contextmenu", (e) => e.preventDefault());
 document.onkeydown = function (e) {
   if (
@@ -153,7 +153,7 @@ tosAgreeBtn.addEventListener("click", () => {
   matchSound.play().catch((e) => {});
 });
 
-// Mobile Header Button (Mirrors the main button)
+// Mobile Header Button
 headerStopBtn.addEventListener("click", () => stopBtn.click());
 
 themeToggle.addEventListener("click", () => {
@@ -289,7 +289,7 @@ function toggleInputs(disabled) {
   if (!disabled) matchInfo.style.display = "none";
 }
 
-// --- NEW SKIP LOGIC ---
+// --- SKIP LOGIC ---
 function startFindingPartner() {
   let nickname = nicknameInput.value.trim();
   if (!nickname) {
@@ -326,15 +326,10 @@ startBtn.addEventListener("click", startFindingPartner);
 
 stopBtn.addEventListener("click", () => {
   if (isConnected) {
-    // SKIP LOGIC (Disconnect -> Find New)
     socket.emit("disconnect_partner");
-
-    // FIX: Tell the app we are no longer connected!
     isConnected = false;
-
     startFindingPartner();
   } else {
-    // STOP LOGIC (Cancel Search)
     socket.emit("disconnect_partner");
     startBtn.style.display = "block";
     stopBtn.style.display = "none";
@@ -349,7 +344,6 @@ stopBtn.addEventListener("click", () => {
     );
   }
 });
-// ----------------------
 
 function setSearchingState(tags) {
   startBtn.style.display = "none";
@@ -358,6 +352,7 @@ function setSearchingState(tags) {
 
   // UI for Searching (Should say STOP, not SKIP)
   stopBtn.textContent = "Stop Searching";
+  headerStopBtn.textContent = "✖️"; // <--- ADD THIS LINE (Updates mobile button to 'X')
 
   toggleInputs(true);
   profileSection.style.display = "flex";
@@ -383,9 +378,8 @@ function setConnectedState(partnerProfile) {
   emojiBtn.disabled = false;
   cameraBtn.disabled = false;
 
-  // UI for Chatting (Shows "Skip" option)
   stopBtn.textContent = "Skip ⏭️";
-  headerStopBtn.textContent = "⏭️"; // Skip icon for next
+  headerStopBtn.textContent = "⏭️";
 
   profileSection.style.display = "none";
   interestsSection.style.display = "none";
@@ -407,7 +401,6 @@ function handleDisconnectState(reason) {
   cameraBtn.disabled = true;
   emojiPopover.style.display = "none";
 
-  // Reset buttons
   startBtn.style.display = "block";
   startBtn.textContent = "Find New Partner";
   startBtn.disabled = false;

@@ -43,10 +43,7 @@ io.on('connection', (socket) => {
     io.emit('user_count', io.sockets.sockets.size);
 
     socket.on('find_partner', (userData) => {
-        // --- BUG FIX START ---
-        // If userData is null/undefined, stop immediately to prevent crash
         if (!userData) return; 
-        // --- BUG FIX END ---
 
         const safeTags = Array.isArray(userData.tags) ? userData.tags.map(t => xss(t)) : [];
         let safeNickname = xss(userData.profile?.nickname || 'Stranger').substring(0, 15);
@@ -89,7 +86,6 @@ io.on('connection', (socket) => {
 
     socket.on('send_message', (msg) => {
         if (socket.partnerId) {
-            // Safety: Ensure msg is a string before processing
             if (typeof msg !== 'string') return;
 
             let cleanMsg = xss(msg);
